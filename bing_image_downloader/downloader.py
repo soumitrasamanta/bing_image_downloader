@@ -27,9 +27,9 @@ def download(
         adult = 'on'
 
     
-    image_dir = Path(output_dir).joinpath(query).absolute()
+    image_dir = Path(output_dir).joinpath(query.replace(' ', '_')).absolute()
     if len(output_info_filename)==0:
-        output_info_filename = ''.join([query, '_images_source_info.xlsx'])
+        output_info_filename = ''.join([query.replace(' ', '_'), '_images_source_info.xlsx'])
 
     if force_replace:
         if Path.isdir(image_dir):
@@ -59,4 +59,4 @@ def download(
 
 
 if __name__ == '__main__':
-    download('dog', limit=10, timeout=1)
+    download('Corrosion On Metal', limit=10, timeout=1)
