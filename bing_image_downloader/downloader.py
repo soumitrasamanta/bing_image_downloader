@@ -8,8 +8,17 @@ except ImportError:  # Python 3
     from .bing import Bing
 
 
-def download(query, limit=100, output_dir='dataset', adult_filter_off=True, 
-force_replace=False, timeout=60, verbose=True):
+def download(
+    query, 
+    limit=100, 
+    output_dir='dataset', 
+    adult_filter_off=True, 
+    force_replace=False, 
+    timeout=60, 
+    output_filetype='jpg',
+    output_info_filename='',
+    verbose=True
+):
 
     # engine = 'bing'
     if adult_filter_off:
@@ -19,6 +28,8 @@ force_replace=False, timeout=60, verbose=True):
 
     
     image_dir = Path(output_dir).joinpath(query).absolute()
+    if len(output_info_filename)==0:
+        output_info_filename = ''.join([query, '_images_source_info.xlsx'])
 
     if force_replace:
         if Path.isdir(image_dir):
@@ -34,9 +45,18 @@ force_replace=False, timeout=60, verbose=True):
         sys.exit(1)
         
     print("[%] Downloading Images to {}".format(str(image_dir.absolute())))
-    bing = Bing(query, limit, image_dir, adult, timeout, verbose)
+    bing = Bing(
+        query, 
+        limit, 
+        image_dir, 
+        adult, 
+        timeout, 
+        output_filetype=output_filetype, 
+        output_info_filename=output_info_filename, 
+        verbose=verbose,
+    )
     bing.run()
 
 
 if __name__ == '__main__':
-    download('dog', output_dir="..\\Users\\cat", limit=10, timeout=1)
+    download('dog', limit=10, timeout=1)

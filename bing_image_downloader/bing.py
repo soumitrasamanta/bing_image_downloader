@@ -4,6 +4,9 @@ import urllib
 import imghdr
 import posixpath
 import re
+import pandas as pd
+from collections import OrderedDict 
+from tqdm import tqdm
 
 '''
 Python api to download image form Bing.
@@ -12,18 +15,36 @@ Author: Guru Prasad (g.gaurav541@gmail.com)
 
 
 class Bing:
-    def __init__(self, query, limit, output_dir, adult, timeout,  filters='', verbose=True):
+    def __init__(
+        self, 
+        query, 
+        limit, 
+        output_dir, 
+        adult, 
+        timeout,  
+        filters='', 
+        output_filetype='jpg',
+        output_info_filename='images_source_info.xlsx',
+        verbose=True,
+    ):
         self.download_count = 0
         self.query = query
         self.output_dir = output_dir
         self.adult = adult
         self.filters = filters
+        self.output_filetype = output_filetype
+        self.output_info_filename = output_info_filename
         self.verbose = verbose
 
         assert type(limit) == int, "limit must be integer"
         self.limit = limit
+        self.len_limit = len(str(limit))
         assert type(timeout) == int, "timeout must be integer"
         self.timeout = timeout
+        self.dict_image_source = OrderedDict({
+            'image_filename': [None]*self.limit, 
+            'url_info': [None]*self.limit
+        })
 
         # self.headers = {'User-Agent': 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'}
         self.page_counter = 0
@@ -53,15 +74,15 @@ class Bing:
             path = urllib.parse.urlsplit(link).path
             filename = posixpath.basename(path).split('?')[0]
             file_type = filename.split(".")[-1]
-            if file_type.lower() not in ["jpe", "jpeg", "jfif", "exif", "tiff", "gif", "bmp", "png", "webp", "jpg"]:
-                file_type = "jpg"
                 
             if self.verbose:
                 # Download the image
                 print("[%] Downloading Image #{} from {}".format(self.download_count, link))
-                
-            self.save_image(link, self.output_dir.joinpath("Image_{}.{}".format(
-                str(self.download_count), file_type)))
+            output_filename = ''.join(['image', str(self.download_count).zfill(self.len_limit), '.', self.output_filetype])    
+            self.save_image(link, self.output_dir.joinpath(output_filename))
+            self.dict_image_source['image_filename'][self.download_count-1] = output_filename
+            self.dict_image_source['url_info'][self.download_count-1] = link
+            pd.DataFrame.from_dict(self.dict_image_source).to_excel(self.output_dir.joinpath(self.output_info_filename), index=False)
             if self.verbose:
                 print("[%] File Downloaded !\n")
 
