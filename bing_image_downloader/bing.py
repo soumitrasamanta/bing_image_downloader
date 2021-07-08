@@ -100,23 +100,25 @@ class Bing:
                           + '&first=' + str(self.page_counter) + '&count=' + str(self.limit) \
                           + '&adlt=' + self.adult + '&qft=' + ('' if self.filters is None else str(self.filters))
             request = urllib.request.Request(request_url, None, headers=self.headers)
-            response = urllib.request.urlopen(request)
-            html = response.read().decode('utf8')
-            if html ==  "":
-                print("[%] No more images are available")
-                break
-            links = re.findall('murl&quot;:&quot;(.*?)&quot;', html)
+            try:
+                response = urllib.request.urlopen(request)
+                html = response.read().decode('utf8')
+                if html ==  "":
+                    print("[%] No more images are available")
+                    break
+                links = re.findall('murl&quot;:&quot;(.*?)&quot;', html)
+            except:
+                links = []
+                print('Unable to extract data from : "{}"' .format(request_url))
             if self.verbose:
                 print("[%] Indexed {} Images on Page {}.".format(len(links), self.page_counter + 1))
-                print("\n===============================================\n")
+                print("="*70)
 
             for link in links:
-                if self.download_count < self.limit:
+                if((self.download_count < self.limit) and (link not in self.dict_image_source['url_info'][:self.download_count])):
                     self.download_image(link)
 
             self.page_counter += 1
-        print("\n\n[%] Done. Downloaded {} images.".format(self.download_count))
-        print("===============================================\n")
-        print("Please show your support here")
-        print("https://www.buymeacoffee.com/gurugaurav")
-        print("\n===============================================\n")
+        print('\n[%] Done. Downloaded {} "{}" images.' .format(self.download_count, self.query))
+        print("="*70)
+        

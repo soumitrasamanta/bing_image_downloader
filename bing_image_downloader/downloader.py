@@ -59,4 +59,4 @@ def download(
 
 
 if __name__ == '__main__':
-    download('Corrosion On Metal', limit=10, timeout=1)
+    download('Corrosion On Metal', limit=200, timeout=30)
